@@ -1,0 +1,482 @@
+1.to view the database already present:
+show dbs
+2.use a particular database:
+use database_name
+3.create the collection:
+db.createCollection("students")
+
+Example:
+========
+Step1:>show dbs
+admin   0.000GB
+config  0.000GB
+local   0.000GB
+
+Step2:> use manipalDatabase
+Output:switched to db manipalDatabase
+
+Step3:db.createCollection("students")
+Output:{"ok":1}
+
+Step4:to view the currently db created:
+show dbs
+Output: 
+admin   0.000GB
+config  0.000GB
+local   0.000GB
+movies  0.000GB
+Step5:to view the collection:
+show collections
+
+Step6:
+to drop a collection:
+db.students.drop()
+Output: true
+
+Step7:drop a database:
+db.dropDatabase()
+Output:{ "dropped" : "manipalDatabase", "ok" : 1 }
+
+Step8:insert a single document(1 row) in the collection:
+db.movie.insert({'name':'Badal','tags':['comedy','drama']})
+Output when 1 document(row) is added to the collection(table): WriteResult({"nInserted":1})
+
+For multiple inserts:
+db.movie.insert([
+{'name':'Badal','tags':['comedy','drama']},
+{'name':'3idiots','tags':['comedy','drama']},
+{'name':'the sky is pink','tags':['drama']}
+])
+Output:
+BulkWriteResult({
+        "writeErrors" : [ ],
+        "writeConcernErrors" : [ ],
+        "nInserted" : 3,
+        "nUpserted" : 0,
+        "nMatched" : 0,
+        "nModified" : 0,
+        "nRemoved" : 0,
+        "upserted" : [ ]
+})
+
+Step9:to see how many rows are present:
+db.movie.find()
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "Badal", "tags" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "tags" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b81"), "name" : "the sky is pink", "tags" : [ "drama" ] }
+
+Step10:to save() a document: (insert the full line as syntax)
+db.movie.save({"_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "tags" : [ "comedy", "drama" ]}) -->this will rewrite the existing row
+db.movie.save({"name":"MI", "tags":["action"]}) -->insert a new row using save()
+
+Step11:update() a document:(db.movie.update({existing value},{updated value})) by default it takes for 1row update else need to mention multi
+db.movie.update({"name":"MI"},{$set:{"name":"Mission Impossible"}}) -->single row effect
+db.movie.updateMany({},{$set:{'language':'Hindi'}})  -->all rows effected
+
+Step12:rename a field:
+db.movie.update({"name":"MI"},{$rename:{'tags':'genre'}}) -->single row effect
+db.movie.updateMany({},{$rename:{'tags':'genre'}})  -->all rows effected
+
+Step13:delete or remove a field:
+db.movie.update({"name":"MI"},{$unset:{'language':''}}) -->single row effect
+db.movie.updateMany({},{$unset:{'language':''}})  -->all rows effected
+
+Step14:remove a document:
+db.movie.remove({'genre':['drama']}) -->will remove all genre having drama as value
+db.movie.remove({'genre':['drama']},{justOne:true}) -->will remove only one drama genre
+
+Step15:to view the data in a better way:
+db.movie.find().pretty()
+
+Step16:to view only the 1st row:
+db.movie.findOne()
+
+Step17:to view data based on a condition:(acts like a where condition)
+db.movie.find({'name':'KKIY'})
+
+Step18:to check for equal to value-->db.movie.find({'year':2000})
+		for less than value check-->$lt -->db.movie.find({'year':{$lt:2000}})
+		for greater than value check-->$gt -->db.movie.find({'year':{$gt:2000}})
+		for less than equal to value check-->$lte-->db.movie.find({'year':{$lte:2000}})
+		for greater than equal to value check-->$gte-->db.movie.find({'year':{$gte:2000}})
+		for not equal to-->$ne-->db.movie.find({'year':{$ne:2000}})
+		for year>=1996 and year<2000-->db.movie.find({'year':{$gte:1996,$lt:2000}}) [Here ',' is considered to be and operator]
+		for and condition:db.movie.find({$and:[{'name':'KKIY'},{'genre':'comedy'}]})
+		for or condition:db.movie.find({$or:[{'name':'KKIY'},{'genre':'action'}]})
+		for both and and or condition:db.movie.find({'year':{$ne:1996},
+						$or:[{'genre':'comedy'},
+						{'name':MI}]
+						}) 
+
+Step19:in condition check:
+db.movie.find({'genre':{$in:['comedy','action']}})
+
+Step20:startswith condition check:
+db.movie.find({'name':/^M/})
+
+Step21:endswith condition check:
+db.movie.find({'name':/s$/})
+
+Step22:check if a field exists or not in the collection:
+db.movie.find({'title':{$exists:false}}) -->doesn't exist
+db.movie.find({'title':{$exists:true}})  -->does exist
+
+Step23:create an index on name column as index helps in faster retrieval of data
+db.movie.ensureIndex({'name':1}) -->1:ascending 
+db.movie.ensureIndex({'name':-1}) -->-1:descending
+
+Step24:Select statement type: Use 0 for not to display a column and 1 or any number other than 0 for displaying a column 
+db.movie.find({},{"_id":0}) --> not displaying _id column data
+db.movie.find({},{"_id":0,"genre":1}) --> not displaying _id column data but only showing genre column
+db.movie.find({},{"_id":0,"genre":1,'name':2}) --> not displaying _id column data but only showing genre and name columns
+db.movie.find({},{"_id":0,"genre":1,'name':1}) 
+db.movie.find({},{"genre":1,'name':1})
+
+Step25:limit the number of rows to be displayed:
+db.movie.find().limit(2) -->show 1st 2rows
+
+Step26:skip the rows and show the rest of rows:
+db.movie.find().skip(1) -->skip 1st row only
+
+Step27:sort the data in ascending or descending order:
+db.movie.find().sort({'column_name':1}) -->1:ascending order
+db.movie.find().sort({'column_name':-1}) -->1:descending order
+Note: if no year column is present in the data:
+in ascending order: without year data will appear first then year related data will come in ascending order on years present
+in descending order: with year related data will appear first in descending order and then without year data will appear
+
+Step28:aggregate() function:
+db.movie.aggregate([{$group:{_id:'$year',title:{$max:'$name'}}}])  (max function)--> here _id,title are reserved or any random words
+db.movie.aggregate([{$group:{_id:'$year',title:{$max:'$name'}}}])  (min function)
+db.movie.aggregate([{$group:{_id:'$year',title:{$sum:1}}}])        (count function)
+db.movie.aggregate([{$group:{_id:'$year',rev_earned:{$sum:'$revenue'}}}]) (sum function)
+
+Step29:
+$match-->used to match a condition
+$sort-->for sorting data
+$project-->used to display or not some columns
+
+
+---------------------------------------------------------------------------------------------------------------------------
+Class assignment:
+===================
+1.Create a database movies.Within that create a collection movie.
+Steps:
+======
+> use movies
+Output:switched to db movies
+> db.createCollection("movie")
+Output:{ "ok" : 1 }
+> show dbs
+Output:
+admin   0.000GB
+config  0.000GB
+local   0.000GB
+movies  0.000GB
+> show collections
+Output:movie
+> db.movie.insert({'name':'Badal','tags':['comedy','drama']})
+Output when 1 document(row) is added to the collection(table): WriteResult({"nInserted":1})
+> db.movie.insert([
+{'name':'Badal','tags':['comedy','drama']},
+{'name':'3idiots','tags':['comedy','drama']},
+{'name':'the sky is pink','tags':['drama']}
+])
+Output for multiple insertions:
+BulkWriteResult({
+        "writeErrors" : [ ],
+        "writeConcernErrors" : [ ],
+        "nInserted" : 3,
+        "nUpserted" : 0,
+        "nMatched" : 0,
+        "nModified" : 0,
+        "nRemoved" : 0,
+        "upserted" : [ ]
+})
+> db.movie.find()
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "Badal", "tags" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "tags" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b81"), "name" : "the sky is pink", "tags" : [ "drama" ] }
+> db.movie.save({"name":"MI", "tags":["action"]})  -->insert a new row using save()
+WriteResult({ "nInserted" : 1 })
+> db.movie.find()
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "Badal", "tags" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "tags" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b81"), "name" : "the sky is pink", "tags" : [ "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "MI", "tags" : [ "action" ] }   -->new row created
+> db.movie.save({"_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "tags" : [ "comedy", "drama" ]}) -->update name for an existing _id using save()
+Output:
+WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+> db.movie.find()
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "tags" : [ "comedy", "drama" ] } -->got modified
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "tags" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b81"), "name" : "the sky is pink", "tags" : [ "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "MI", "tags" : [ "action" ] }
+> db.movie.update({"name":"MI"},{$set:{"name":"Mission Impossible"}})
+Output:
+WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+> db.movie.find()
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "tags" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "tags" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b81"), "name" : "the sky is pink", "tags" : [ "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "tags" : [ "action" ] }
+> db.movie.updateMany({},{$set:{'language':'Hindi'}})
+Output:
+{ "acknowledged" : true, "matchedCount" : 4, "modifiedCount" : 4 }
+> db.movie.find()
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "tags" : [ "comedy", "drama" ], "language" : "Hindi" }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "tags" : [ "comedy", "drama" ], "language" : "Hindi" }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b81"), "name" : "the sky is pink", "tags" : [ "drama" ], "language" : "Hindi" }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "tags" : [ "action" ], "language" : "Hindi" }
+> db.movie.update({"name":"Mission Impossible"},{$set:{"language":"English"}})
+Output:
+WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+> db.movie.find()
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "tags" : [ "comedy", "drama" ], "language" : "Hindi" }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "tags" : [ "comedy", "drama" ], "language" : "Hindi" }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b81"), "name" : "the sky is pink", "tags" : [ "drama" ], "language" : "Hindi" }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "tags" : [ "action" ], "language" : "English" }
+> db.movie.updateMany({},{$rename:{'tags':'genre'}})
+Output:
+{ "acknowledged" : true, "matchedCount" : 4, "modifiedCount" : 4 }
+> db.movie.find()
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "language" : "Hindi", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "language" : "Hindi", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b81"), "name" : "the sky is pink", "language" : "Hindi", "genre" : [ "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "language" : "English", "genre" : [ "action" ] }
+> db.movie.updateMany({},{$unset:{'language':''}})
+Output:
+{ "acknowledged" : true, "matchedCount" : 4, "modifiedCount" : 4 }
+> db.movie.find()
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b81"), "name" : "the sky is pink", "genre" : [ "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.remove({'genre':['drama']})
+Output:
+WriteResult({ "nRemoved" : 1 })
+> db.movie.find()
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find().pretty()
+Output:
+{
+        "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"),
+        "name" : "KKIY",
+        "genre" : [
+                "comedy",
+                "drama"
+        ]
+}
+{
+        "_id" : ObjectId("5e1573978ab6f0234b9f4b80"),
+        "name" : "3idiots",
+        "genre" : [
+                "comedy",
+                "drama"
+        ]
+}
+{
+        "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"),
+        "name" : "Mission Impossible",
+        "genre" : [
+                "action"
+        ]
+}
+> db.movie.findOne()
+{
+        "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"),
+        "name" : "KKIY",
+        "genre" : [
+                "comedy",
+                "drama"
+        ]
+}
+> db.movie.find({'name':'KKIY'})
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+> db.movie.find({$and:[{'name':'KKIY'},{'genre':'comedy'}]})
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+> db.movie.find({$or:[{'name':'KKIY'},{'genre':'action'}]})
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find({'genre':{$in:['comedy','action']}})
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find({'name':/^M/})
+Output:
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find({'name':/s$/})
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+> db.movie.find({'name':/^M..i/}) -->no output
+> db.movie.find({'name':/^M..s/})
+Output:
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find({'name':/^..s/})
+Output:
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find({'title':{$exists:true}})  -->no output as column title doesn't exist
+> db.movie.find({'title':{$exists:false}})
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.ensureIndex({'name':-1}) (1 is for ascending and -1 for descending)
+Output:
+{
+        "numIndexesBefore" : 2,
+        "numIndexesAfter" : 2,
+        "note" : "all indexes already exist",
+        "ok" : 1
+}
+> db.movie.find({}) and db.movie.find() are same,i.e. returns all the rows as no condition has been passed
+Output:
+{ "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+{ "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find({},{"_id":0})
+Output:
+{ "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+{ "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find({},{"_id":0,"genre":1})
+Output:
+{ "genre" : [ "comedy", "drama" ] }
+{ "genre" : [ "comedy", "drama" ] }
+{ "genre" : [ "action" ] }
+> db.movie.find({},{"_id":0,"genre":1,'name':2})
+Output:
+{ "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+{ "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find({},{"_id":0,"genre":1,'name':1})
+Output:
+{ "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+{ "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find({},{"genre":1,'name':1})
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> outputf={"_id":0,"genre":1,'name':1}
+Output:
+{ "_id" : 0, "genre" : 1, "name" : 1 }
+> db.movie.find({},outputf)
+Output:
+{ "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+{ "name" : "Mission Impossible", "genre" : [ "action" ] }
+>db.movie.find({"genre":'comedy'})
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+"OR"
+> outputf={"_id":1,"genre":1,'name':1}
+Output:
+{ "_id" : 1, "genre" : 1, "name" : 1 }
+> db.movie.find({"genre":'comedy'},outputf)
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+> db.movie.find({},{'genre':1,'_id':0})
+Output:
+{ "genre" : [ "comedy", "drama" ] }
+{ "genre" : [ "comedy", "drama" ] }
+{ "genre" : [ "action" ] }
+> db.movie.find({'year':{$gt:2000}},{'genre':1,'_id':0})
+> db.movie.find({'title':{$exists:false}},{'year':1,'_id':0})
+> db.movie.find().limit(2)
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+> db.movie.find().limit(2).skip(1)
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find().limit(2).skip(2)
+Output:
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find().limit(2).skip(3)
+Output: nothing as there were only 3 rows and those 3 rows got skipped
+> db.movie.find().limit(2).skip(1)
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ], "year" : 2010 }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.find().skip(1)
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ], "year" : 2010 }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+{ "_id" : ObjectId("5e16a1880f970a3c5597a3e9"), "name" : "Charlie", "tags" : [ "comedy", "drama" ], "language" : "English", "year" : 1962 }
+> db.movie.find().sort({'year':1})
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+{ "_id" : ObjectId("5e16a1880f970a3c5597a3e9"), "name" : "Charlie", "tags" : [ "comedy", "drama" ], "language" : "English", "year" : 1962 }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ], "year" : 2010 }
+> db.movie.find().sort({'year':-1})
+Output:
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b80"), "name" : "3idiots", "genre" : [ "comedy", "drama" ], "year" : 2010 }
+{ "_id" : ObjectId("5e16a1880f970a3c5597a3e9"), "name" : "Charlie", "tags" : [ "comedy", "drama" ], "language" : "English", "year" : 1962 }
+{ "_id" : ObjectId("5e1573978ab6f0234b9f4b7f"), "name" : "KKIY", "genre" : [ "comedy", "drama" ] }
+{ "_id" : ObjectId("5e15782c8ab6f0234b9f4b82"), "name" : "Mission Impossible", "genre" : [ "action" ] }
+> db.movie.aggregate([{$group:{_id:'$year',title:{$max:'$name'}}}])  -->year wise max movie name
+Output:
+{ "_id" : 1962, "title" : "Charlie" }
+{ "_id" : 2010, "title" : "3idiots" }
+{ "_id" : null, "title" : "Mission Impossible" }
+> db.movie.aggregate([{$group:{_id:'$year',title:{$sum:1}}}])  -->year wise count no. of movies
+{ "_id" : 1962, "title" : 1 }
+{ "_id" : 2010, "title" : 1 }
+{ "_id" : null, "title" : 2 }
+> db.movie.aggregate([{$group:{_id:'$year',rev_earned:{$sum:'$revenue'}}}]) -->year wise total revenue
+Output:
+{ "_id" : 1962, "rev_earned" : 2020 }
+{ "_id" : 2010, "rev_earned" : 2020 }
+{ "_id" : null, "rev_earned" : 4040 }
+> db.movie.aggregate([{$group:{_id:'',rev_earned:{$sum:'$revenue'}}}])  -->total revenue
+Output:
+{ "_id" : "", "rev_earned" : 8080 }
+OR
+> db.movie.aggregate([{$group:{_id:null,rev_earned:{$sum:'$revenue'}}}])
+Output:
+{ "_id" : null, "rev_earned" : 8080 }
+> db.movie.aggregate([{$group:{_id:'$year',rev:{$sum:1}}},{$sort:{'_id':1}}]) -->count of elements as per year wise (data sorted on year as ascending order)
+Output:
+{ "_id" : null, "rev" : 2 }
+{ "_id" : 1962, "rev" : 1 }
+{ "_id" : 2010, "rev" : 1 }
+> db.movie.aggregate([{$group:{_id:'$year',rev:{$sum:1}}},{$project:{'_id':0}}]) -->without _id display
+Output:
+{ "rev" : 1 }
+{ "rev" : 1 }
+{ "rev" : 2 }
+> db.movie.aggregate([{$group:{_id:'$year',rev:{$sum:1}}},{$sort:{'_id':1}},{$project:{'_id':0}}]) -->data sorted in year wise ascending order and _id not displayed
+Output:
+{ "rev" : 2 }
+{ "rev" : 1 }
+{ "rev" : 1 }
+> db.movie.aggregate([{$group:{_id:'$year',rev:{$sum:1}}},{$match:{'_id':{$ne:null}}},{$sort:{'_id':1}},{$project:{'_id':0}}]) -->count of elements where data is sorted in year wise ascending order and _id not displayed where year is not equal to null
+Output:
+{ "rev" : 1 }
+{ "rev" : 1 }
+> db.movie.aggregate([{$group:{_id:'$year',rev:{$sum:1}}},{$match:{'_id':{$ne:null}}}]) --> count of data year wise but year not equal to null
+Output:
+{ "_id" : 1962, "rev" : 1 }
+{ "_id" : 2010, "rev" : 1 }
